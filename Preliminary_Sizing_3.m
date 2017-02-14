@@ -44,7 +44,7 @@ W_payload = (W_1pass)* j;
         W6 = 0.99*W5; % Descent
         W7 = 0.997*W6; % Approach and Landing
         
-        W_empty = (1.13 * 10^(-6) * W_to^2) + (0.48*W_to)
+        %W_empty = (1.13 * 10^(-6) * W_to^2) + (0.48*W_to)
         W_fuel = (1-(W7/W1))*W_to*1.05;
         W_to = W_fuel + W_payload + W_empty+ W_crew +W_tfo;
         %figure(j-5)
