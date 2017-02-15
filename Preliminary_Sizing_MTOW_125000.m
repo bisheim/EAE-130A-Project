@@ -55,5 +55,61 @@ while abs(error) > .0001
     
     error = (W_to-W_to_temp)/W_to_temp*100;
 end
-W_to
-error
+%disp(W_to)
+%disp(error)
+%% Find Wing Area and Thrust
+%Stall Speed
+rho_o = 0.002378; %slug/ft^3 @sea level
+V_landing = 160*1.68781; %ft/s, Concorde Landing Speed
+V_stall = V_landing/1.3;
+C_Lmax = 2.0; %Design Parameter (Research this Weekend)
+W_Stall = 0.5*rho_o*V_stall^2*C_Lmax; %lbf/ft^2
+
+%Max Speed
+W_S_var = 1:200;
+C_do = .04; %Design Parameter (Research this Weekend)
+a = rho_o*C_do/2;
+sigma_cruise = 0.1151/0.7519; %Mattingly Tables
+rho_cruise = sigma_cruise*0.0767/32.174; %slug/ft^3
+e = 0.7; %Design Parameter
+AR = 2.7563; %Design Parameter (Research)
+K = 1/(pi*e*AR);
+b = 2*K/(rho_cruise*sigma_cruise);
+V_cruise = V;
+V_max = 1.2*V_cruise;
+T_W_maxspeed = a*V_max^2./W_S_var + b/V_max^2*(W_S_var);
+
+%Takeoff Run Requirements : Saadraey Page 
+mu = 0.05; % Coeff Friction runway
+g = 32.174; % Gravity
+S_to = 7000; %Runway length from RFP
+C_Dlg_o = 0.012; % Landing Gear dra coeff S 4.69b
+C_Dhild_to = 0.003; % Hi lift devices on TO withou Kreuger flaps S. 4.96b
+C_Lc =0.05; % Aircraft Cruise Lift Coeff
+C_Lflap_to = 0.5; % Lift coeff from flaps at takeoff
+
+V_r = 1.1*V_stall; % Rotational speed at wheels up
+%C_LR = ((2*g)/(rho_o*V_r^2)).*(W_S_var); %Rotational Lift Coefficient
+C_LR = C_Lmax/(1.15^2); % Rotational Lift Coefficient
+C_Lto = C_Lc + C_Lflap_to;
+C_Dto_o = C_do + C_Dlg_o+C_Dhild_to;
+C_Dto = C_Dto_o+K*C_Lto^2; 
+C_DG = C_Dto-mu*C_Lto;
+
+T_W_takeoffrun = (mu-(mu+(C_DG./C_LR)).*(exp(0.6*rho_o*g*C_DG*S_to.*(W_S_var).^(-1))))./(1-exp(0.6*rho_o*g*C_DG*S_to.*(W_S_var).^(-1)));
+
+% Rate of Climb Requirements
+ROC = 6000; %  Design Parameter (Research )fpm Concorde was 5000 
+T_W_ROC = (ROC/sqrt((2/(rho_o*sqrt(C_do/K)))))+1/(L_overD);
+
+%Ceiling Requirements
+ROC_cruise = 300; %fpm cruise ceiling 
+T_W_cruise_ceiling = ROC_cruise./(sigma_cruise*sqrt(2./(rho_cruise*sqrt(C_do/K)).*W_S_var))+(1/(sigma_cruise*L_overD));
+
+
+plot(W_S_var,T_W_maxspeed,'r'); hold on
+plot(W_S_var,T_W_takeoffrun,'g');
+plot(W_S_var,T_W_cruise_ceiling,'k');
+plot(W_Stall,1:160,'b');
+plot(W_S_var,T_W_ROC,'c');
+legend('Max Speed','Takeoff', 'Ceiling', 'Stall', 'ROC', 'Location', 'best')
